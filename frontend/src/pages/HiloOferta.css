@@ -1,0 +1,187 @@
+.hilo {
+  padding-bottom: 60px;
+}
+
+.hilo-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 20px;
+  transition: color 0.2s;
+}
+.hilo-volver:hover {
+  color: var(--primary);
+}
+
+.hilo-oferta {
+  padding: 28px;
+  margin-bottom: 20px;
+}
+
+.hilo-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.hilo-logo, .hilo-logo-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.hilo-logo-placeholder {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 22px;
+}
+
+.hilo-titulo {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.hilo-empresa {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.hilo-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.hilo-ubicacion, .hilo-fecha-publicacion {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.hilo-categoria-badge {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.hilo-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.hilo-salario {
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.hilo-descripcion {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.hilo-interacciones {
+  padding: 24px;
+}
+
+.hilo-interacciones-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.hilo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.hilo-form button {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hilo-login-msg {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+.hilo-login-msg a {
+  color: var(--primary);
+  font-weight: 600;
+}
+.hilo-login-msg a:hover {
+  text-decoration: underline;
+}
+
+.hilo-comentarios {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hilo-sin-comentarios {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 20px;
+}
+
+.hilo-pregunta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hilo-pregunta-card, .hilo-respuesta {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.hilo-respuesta {
+  margin-left: 32px;
+  border-left: 3px solid var(--accent);
+}
+
+.hilo-comentario-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.hilo-fecha {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.hilo-comentario-texto {
+  font-size: 14px;
+  line-height: 1.6;
+}

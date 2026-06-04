@@ -1,0 +1,186 @@
+/* --- Layout de lista (estilo Bumeran/CompuTrabajo) --- */
+.tarjeta-oferta-lista {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  align-items: flex-start;
+}
+
+.tarjeta-oferta-lista:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+}
+
+.tfl-destacada-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--accent), #00c853);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* Logo */
+.tfl-logo {
+  flex-shrink: 0;
+}
+
+.tfl-logo-img, .tfl-logo-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.tfl-logo-placeholder {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+/* Contenido principal */
+.tfl-contenido {
+  flex: 1;
+  min-width: 0;
+}
+
+.tfl-superior {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tfl-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tfl-titulo {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.tfl-empresa {
+  font-size: 14px;
+  color: var(--primary);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.tfl-detalles {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.tfl-detalle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tfl-descripcion {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Columna derecha (salario + tags) */
+.tfl-derecha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tfl-salario {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-glow);
+  white-space: nowrap;
+}
+
+.tfl-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.tfl-categoria {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+/* Botón guardar inferior */
+.tfl-inferior {
+  margin-top: 10px;
+}
+
+.tfl-guardar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1.5px solid #e5e7eb;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  font-family: var(--font);
+  font-weight: 500;
+}
+
+.tfl-guardar:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0, 230, 118, 0.06);
+}
+
+.tfl-guardar.guardado {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0, 230, 118, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .tarjeta-oferta-lista {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tfl-logo-img, .tfl-logo-placeholder {
+    width: 48px;
+    height: 48px;
+  }
+
+  .tfl-superior {
+    flex-direction: column;
+  }
+
+  .tfl-derecha {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}

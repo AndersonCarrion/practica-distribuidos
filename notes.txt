@@ -1,0 +1,42 @@
+Plan: Indicador de Nodo en Navbar
+Solo necesitamos modificar 3 archivos:
+Backend — backend/routes/ofertas.js:
+- En GET /api/ofertas (la paginada), agregar respondido_por al JSON de respuesta, leyendo process.env.NODE_NAME || 'Nodo-Desconocido'.
+- El endpoint /api/status ya lo tiene, pero este es el que ya usa el frontend.
+Frontend — frontend/src/components/Navbar.jsx:
+- Agregar un useEffect con un setInterval cada 5s que haga GET /api/status.
+- Mostrar una burbuja pequeña con el nombre del nodo activo, ej: ● Nodo-A-3001.
+- El color puede cambiar según el nodo (A=verde, B=azul, C=naranja) para identificar visualmente el balanceo.
+Frontend — frontend/src/components/Navbar.css:
+- Estilos para el indicador (burbuja pequeña, tipografía mono, colores por nodo).
+Cómo vaciar la base de datos / eliminar usuarios
+Desde la terminal, conectándote directo a MongoDB:
+# Entrar al contenedor de MongoDB
+docker-compose exec mongo1 mongosh
+
+# Una vez dentro del shell:
+use muraltech;
+
+# Ver todos los usuarios
+db.usuarios.find({}, { email: 1, nombre: 1, rol: 1 }).pretty();
+
+# Eliminar un usuario específico por email
+db.usuarios.deleteOne({ email: "usuario@example.com" });
+
+# Eliminar todas las ofertas
+db.ofertas.deleteMany({});
+
+# BORRAR TODO (base de datos completa)
+db.dropDatabase();
+También puedes dejar las imágenes (logos) y limpiar solo datos, o viceversa.
+Por qué es lento al detener nodos
+docker-compose stop envía señal SIGTERM y espera hasta 10s. Para pruebas más rápidas:
+# Pausar/reanudar es instantáneo (congela el proceso)
+docker-compose pause backend2
+docker-compose unpause backend2
+
+# Matar es más rápido que stop
+docker-compose kill backend2
+docker-compose start backend2
+Además, MongoDB replica set tiene un election timeout de ~10s cuando pierde un nodo. Eso es normal.
+¿Procedo con la implementación del indicador de nodo (solo punto 3)?
