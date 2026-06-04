@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # --- BASES DE DATOS REPLICADAS ---
+  mongo1:
+    image: mongo:7.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+
+  mongo2:
+    image: mongo:7.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27018:27017"
+
+  mongo3:
+    image: mongo:7.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27019:27017"
+
+  # Configura el Replica Set automáticamente al iniciar
+  mongo-init:
+    image: mongo:7.0
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    command: >
+      mongosh --host mongo1:27017 --eval '
+        try {
+          rs.initiate({
+            _id: "rs0",
+            members: [
+              { _id: 0, host: "mongo1:27017" },
+              { _id: 1, host: "mongo2:27017" },
+              { _id: 2, host: "mongo3:27017" }
+            ]
+          });
+          print("Replica Set Inicializado");
+        } catch(e) {
+          print("Ya estaba inicializado");
+        }
+      '
+
+  # --- CLUSTER DE BACKENDS ---
+  backend1:
+    build: ./backend
+    environment:
+      - NODE_NAME=Nodo-A-3001
+    depends_on:
+      - mongo-init
+
+  backend2:
+    build: ./backend
+    environment:
+      - NODE_NAME=Nodo-B-3002
+    depends_on:
+      - mongo-init
+
+  backend3:
+    build: ./backend
+    environment:
+      - NODE_NAME=Nodo-C-3003
+    depends_on:
+      - mongo-init
+
+  # --- FRONTEND (REACT) ---
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend1
+
+  # --- BALANCEADOR DE CARGA ---
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend1
+      - backend2
+      - backend3
