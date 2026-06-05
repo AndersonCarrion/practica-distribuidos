@@ -17,7 +17,8 @@ services:
       - NODE_NAME=${NODE_NAME}
       - MONGO_URI=mongodb://${MAQUINA1_IP}:27017,${MAQUINA2_IP}:27017,${MAQUINA3_IP}:27017/muraltech?replicaSet=rs0
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     restart: unless-stopped
     volumes:
       - uploads_data:/app/uploads
@@ -30,6 +31,12 @@ services:
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped
+    # Ajuste de identación estricta para solucionar el error de mapping:
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok", "--quiet"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
 
 volumes:
   mongo_data:
