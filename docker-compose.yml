@@ -1,0 +1,36 @@
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_NAME=${NODE_NAME}
+      - MONGO_URI=mongodb://${MAQUINA1_IP}:27017,${MAQUINA2_IP}:27017,${MAQUINA3_IP}:27017/muraltech?replicaSet=rs0
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    volumes:
+      - uploads_data:/app/uploads
+
+  mongo:
+    image: mongo:7.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  uploads_data:
