@@ -7,8 +7,6 @@ const app = express();
 const PORT = 3000;
 const NODE_NAME = process.env.NODE_NAME || 'Nodo-Desconocido';
 
-mongoose.set('bufferTimeoutMS', 0);
-
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -22,19 +20,28 @@ const MONGO_OPTIONS = {
   retryWrites: true,
 };
 
+const MONGO_RETRY_INTERVAL = 3000;
 const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/muraltech';
 
 function conectarMongo() {
   mongoose.connect(mongoURI, MONGO_OPTIONS)
     .then(() => console.log(`${NODE_NAME} conectado a MongoDB (${mongoURI})`))
-    .catch(err => console.error(`${NODE_NAME} error de conexión a MongoDB:`, err.message));
+    .catch(err => {
+      console.error(`${NODE_NAME} error de conexión a MongoDB:`, err.message);
+      console.warn(`${NODE_NAME} reintentando en ${MONGO_RETRY_INTERVAL / 1000}s...`);
+      setTimeout(conectarMongo, MONGO_RETRY_INTERVAL);
+    });
 }
 
 conectarMongo();
 
 mongoose.connection.on('disconnected', () => {
-  console.warn(`${NODE_NAME} MongoDB desconectado, reconectando en 3s...`);
-  setTimeout(conectarMongo, 3000);
+  console.warn(`${NODE_NAME} MongoDB desconectado, reconectando en ${MONGO_RETRY_INTERVAL / 1000}s...`);
+  setTimeout(conectarMongo, MONGO_RETRY_INTERVAL);
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log(`${NODE_NAME} MongoDB reconectado exitosamente`);
 });
 
 mongoose.connection.on('error', err => {

@@ -4,9 +4,9 @@ http {
     include /etc/nginx/mime.types;
 
     upstream backend_servers {
-        server 26.6.46.120:3000 max_fails=3 fail_timeout=10s;
-        server 26.68.45.97:3000 max_fails=3 fail_timeout=10s;
-        server 26.97.251.131:3000 max_fails=3 fail_timeout=10s;
+        server ${MAQUINA1_IP}:3000 max_fails=3 fail_timeout=10s;
+        server ${MAQUINA2_IP}:3000 max_fails=3 fail_timeout=10s;
+        server ${MAQUINA3_IP}:3000 max_fails=3 fail_timeout=10s;
     }
 
     server {
