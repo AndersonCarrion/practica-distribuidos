@@ -7,6 +7,8 @@ const app = express();
 const PORT = 3000;
 const NODE_NAME = process.env.NODE_NAME || 'Nodo-Desconocido';
 
+mongoose.set('bufferTimeoutMS', 0);
+
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -15,7 +17,6 @@ const MONGO_OPTIONS = {
   serverSelectionTimeoutMS: 5000,
   connectTimeoutMS: 10000,
   heartbeatFrequencyMS: 2000,
-  bufferTimeoutMS: 0,
 };
 
 const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/muraltech';
