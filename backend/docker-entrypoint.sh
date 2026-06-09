@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-echo "[entrypoint] Esperando a que MongoDB replica set esté listo..."
+echo "[entrypoint] Esperando a que MongoDB replica set estÃ© listo..."
 MAX_RETRIES=30
 RETRY_INTERVAL=2
 
@@ -19,7 +19,7 @@ while [ $i -lt $MAX_RETRIES ]; do
           console.log('PRIMARY encontrado:', primary.name);
           process.exit(0);
         } else {
-          console.log('Replica set presente, pero sin PRIMARY aún');
+          console.log('Replica set presente, pero sin PRIMARY aÃºn');
           process.exit(1);
         }
       } catch (err) {
@@ -37,7 +37,7 @@ while [ $i -lt $MAX_RETRIES ]; do
 done
 
 if [ $i -eq $MAX_RETRIES ]; then
-  echo "[entrypoint] ADVERTENCIA: No se detectó PRIMARY en MongoDB. Iniciando de todas formas..."
+  echo "[entrypoint] ADVERTENCIA: No se detectÃ³ PRIMARY en MongoDB. Iniciando de todas formas..."
 fi
 
 exec node server.js
