@@ -26,7 +26,7 @@ export default function Mural() {
   ofertasRef.current = ofertas;
   filtrosRef.current = filtros;
 
-  const cargarOfertas = useCallback(async (pagina, reset) => {
+  const cargarOfertas = useCallback(async (pagina, reset, signal) => {
     setCargando(true);
     try {
       const params = new URLSearchParams({ page: pagina, limit: 15 });
@@ -34,7 +34,7 @@ export default function Mural() {
       if (filtrosRef.current.modalidad) params.set('modalidad', filtrosRef.current.modalidad);
       if (filtrosRef.current.orden) params.set('orden', filtrosRef.current.orden);
       if (filtrosRef.current.buscar) params.set('buscar', filtrosRef.current.buscar);
-      const data = await get(`/ofertas?${params}`);
+      const data = await get(`/ofertas?${params}`, { signal });
       if (reset) {
         setOfertas(data.ofertas);
       } else {
@@ -43,40 +43,54 @@ export default function Mural() {
       setTotalPages(data.totalPages);
       setTotal(data.total);
     } catch (err) {
+      if (err.name === 'AbortError') return;
       console.error(err);
     } finally {
       setCargando(false);
     }
   }, []);
 
-  const cargarGuardados = useCallback(async () => {
+  const cargarGuardados = useCallback(async (signal) => {
     if (!isAutenticado) return;
     try {
-      const ids = await get('/guardados/ids');
+      const ids = await get('/guardados/ids', { signal });
       setGuardadosIds(ids);
-    } catch { /* ignore */ }
+    } catch {
+      if (signal?.aborted) return;
+    }
   }, [isAutenticado]);
 
   useEffect(() => {
+    const abortController = new AbortController();
     setPage(1);
-    cargarOfertas(1, true);
-    cargarGuardados();
+    cargarOfertas(1, true, abortController.signal);
+    cargarGuardados(abortController.signal);
+    return () => abortController.abort();
   }, [filtros, cargarOfertas, cargarGuardados]);
 
   useEffect(() => {
+    const abortController = new AbortController();
+    const { signal } = abortController;
     pollRef.current = setInterval(async () => {
+      if (signal.aborted) return;
       if (filtrosRef.current.categoria || filtrosRef.current.modalidad || filtrosRef.current.buscar) return;
       try {
         const params = new URLSearchParams({ page: 1, limit: 1 });
-        const data = await get(`/ofertas?${params}`);
+        const data = await get(`/ofertas?${params}`, { signal });
+        if (signal.aborted) return;
         const idsActuales = new Set(ofertasRef.current.map(o => o._id));
         const nuevas = data.ofertas.filter(o => !idsActuales.has(o._id));
         if (nuevas.length > 0) {
           setNuevasCount(prev => prev + nuevas.length);
         }
-      } catch { /* ignore */ }
+      } catch {
+        if (signal.aborted) return;
+      }
     }, POLL_INTERVAL);
-    return () => clearInterval(pollRef.current);
+    return () => {
+      clearInterval(pollRef.current);
+      abortController.abort();
+    };
   }, []);
 
   function recargarNuevas() {

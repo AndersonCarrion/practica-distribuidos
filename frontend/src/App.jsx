@@ -28,7 +28,7 @@ function AppLayout() {
         <Route path="/" element={<Mural />} />
         <Route path="/oferta/:id" element={<HiloOferta />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/login" element={<Login />} />
+        {/* <Route path="/login" element={<Login />} /> */}
         <Route path="/registro" element={<Registro />} />
         <Route path="/recuperar-password" element={<RecuperarPassword />} />
         <Route path="/reset-password/:token" element={<RestablecerPassword />} />
