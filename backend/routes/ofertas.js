@@ -51,6 +51,9 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', authMiddleware, soloInstitucion, validarOferta, async (req, res) => {
   try {
+    if (!req.usuario.institucion_id) {
+      return res.status(400).json({ error: 'Tu cuenta de institución no tiene institucion_id. Re-regístrate o contacta soporte.' });
+    }
     const oferta = new Oferta({
       ...req.body,
       institucion_id: req.usuario.institucion_id,
@@ -60,6 +63,7 @@ router.post('/', authMiddleware, soloInstitucion, validarOferta, async (req, res
     await oferta.save();
     res.status(201).json(oferta);
   } catch (err) {
+    console.error(`${process.env.NODE_NAME || 'Nodo'} [POST /ofertas] Error:`, err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -102,9 +106,13 @@ router.post('/:id/destacar', authMiddleware, soloInstitucion, async (req, res) =
 
 router.get('/institucion/mis-ofertas', authMiddleware, soloInstitucion, async (req, res) => {
   try {
+    if (!req.usuario.institucion_id) {
+      return res.status(400).json({ error: 'Tu cuenta no tiene institucion_id. Re-regístrate como institución.' });
+    }
     const ofertas = await Oferta.find({ institucion_id: req.usuario.institucion_id }).sort({ createdAt: -1 }).lean();
     res.json(ofertas);
   } catch (err) {
+    console.error(`${process.env.NODE_NAME || 'Nodo'} [GET /ofertas/institucion/mis-ofertas] Error:`, err);
     res.status(500).json({ error: err.message });
   }
 });

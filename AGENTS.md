@@ -14,10 +14,13 @@ Demo educativa: 3 máquinas LAN, cada una con Nginx + Express + MongoDB (replica
 
 ```
 backend/          Express API — server.js (entrypoint)
+  docker-entrypoint.sh  Espera replica set listo antes de arrancar
+  Dockerfile       Usa docker-entrypoint.sh como ENTRYPOINT
   routes/         auth, ofertas, interacciones, usuarios, guardados, upload
   models/         Mongoose schemas (Oferta, Usuario, Guardado, Interaccion, Seguidor)
   middleware/     auth.js (JWT), validar.js
   utils/         mailer.js
+scripts/          init-replicaset.sh / .ps1  — inicialización del replica set
 frontend/         React + Vite SPA
   src/
     api.js        Failover fetch: prueba cada URL de VITE_API_SERVERS hasta encontrar una viva
@@ -81,6 +84,18 @@ VITE_API_SERVERS=http://192.168.18.11:80/api,http://192.168.18.59:80/api
 
 ## Inicializar replica set (1 vez)
 
+Usar el script automatizado (lee IPs del `.env` automáticamente):
+
+```bash
+# Windows
+.\scripts\init-replicaset.ps1
+
+# Linux / dentro del contenedor
+docker-compose exec mongo bash /scripts/init-replicaset.sh
+```
+
+O manualmente:
+
 ```bash
 docker-compose exec mongo mongosh --eval "
 rs.initiate({
@@ -98,5 +113,6 @@ Al agregar la PC3: `rs.add('192.168.18.XX:27017')` + actualizar `nginx.conf` y `
 
 - **No hay tests, linter ni typecheck** en el proyecto.
 - `docker-compose.yml` tiene healthcheck en mongo; `backend` espera `condition: service_healthy`.
+- `backend/docker-entrypoint.sh` además espera a que el replica set tenga un PRIMARY antes de arrancar Express.
 - MongoDB replica set election timeout ~10s al perder un nodo.
 - Para vaciar datos: `docker-compose exec mongo mongosh --eval "use muraltech; db.dropDatabase()"`.

@@ -22,13 +22,18 @@ router.post('/registro', validarRegistro, async (req, res) => {
     await usuario.save();
     const token = generarToken(usuario);
     const urlVerificacion = `${req.protocol}://${req.get('host')}/api/auth/verificar/${usuario.token_verificacion}`;
-    await enviarCorreo({
-      to: usuario.email,
-      subject: 'Verifica tu correo — MuralTech',
-      html: plantillaVerificacion(usuario.nombre, urlVerificacion)
-    });
+    try {
+      await enviarCorreo({
+        to: usuario.email,
+        subject: 'Verifica tu correo — MuralTech',
+        html: plantillaVerificacion(usuario.nombre, urlVerificacion)
+      });
+    } catch (mailErr) {
+      console.warn(`${process.env.NODE_NAME} correo no enviado:`, mailErr.message);
+    }
     res.status(201).json({ token, usuario });
   } catch (err) {
+    console.error(`${process.env.NODE_NAME} [POST /auth/registro] Error:`, err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -47,6 +52,7 @@ router.post('/login', validarLogin, async (req, res) => {
     const token = generarToken(usuario);
     res.json({ token, usuario });
   } catch (err) {
+    console.error(`${process.env.NODE_NAME} [POST /auth/login] Error:`, err);
     res.status(500).json({ error: err.message });
   }
 });
