@@ -17,6 +17,9 @@ const MONGO_OPTIONS = {
   serverSelectionTimeoutMS: 5000,
   connectTimeoutMS: 10000,
   heartbeatFrequencyMS: 2000,
+  w: 'majority',
+  readPreference: 'primaryPreferred',
+  retryWrites: true,
 };
 
 const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/muraltech';
@@ -47,6 +50,15 @@ app.use('/api/upload', require('./routes/upload'));
 
 app.get('/api/status', (req, res) => {
   res.json({ nodo: NODE_NAME, online: true, timestamp: new Date().toISOString() });
+});
+
+app.get('/api/health', (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  res.status(dbState === 1 ? 200 : 503).json({
+    nodo: NODE_NAME,
+    db: ['disconnected', 'connected', 'connecting', 'disconnecting'][dbState] || 'unknown',
+    uptime: process.uptime()
+  });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
