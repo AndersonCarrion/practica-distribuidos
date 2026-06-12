@@ -20,7 +20,7 @@ export default function Navbar() {
       <div className="container navbar-inner">
         <Link to="/" className="navbar-brand" onClick={() => setMenuAbierto(false)}>
           <FiGrid className="navbar-logo-icon" />
-          <span className="navbar-title">MuralTech N3</span>
+          <span className="navbar-title">MuralTech N1</span>
         </Link>
 
         <button className="navbar-hamburger" onClick={() => setMenuAbierto(!menuAbierto)}>

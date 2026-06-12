@@ -4,6 +4,10 @@ http {
     include /etc/nginx/mime.types;
 
     upstream backend_servers {
+        # Servidor local por DNS de Docker (funciona siempre en cualquier máquina)
+        server backend:3000;
+        # Servidores remotos por IP pública (balanceo entre máquinas)
+        # En modo mononodo, Nginx los marca como "down" tras 3 fallos
         server ${MAQUINA1_IP}:3000 max_fails=3 fail_timeout=10s;
         server ${MAQUINA2_IP}:3000 max_fails=3 fail_timeout=10s;
         server ${MAQUINA3_IP}:3000 max_fails=3 fail_timeout=10s;

@@ -1,3 +1,10 @@
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.200.0.0/16
+
 services:
   nginx:
     build:
@@ -12,6 +19,8 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    networks:
+      - app_net
 
   backend:
     build: ./backend
@@ -20,31 +29,40 @@ services:
     environment:
       - NODE_NAME=${NODE_NAME}
       - JWT_SECRET=${JWT_SECRET}
-      - MONGO_URI=mongodb://${MAQUINA1_IP}:27017,${MAQUINA2_IP}:27017,${MAQUINA3_IP}:27017/muraltech?replicaSet=rs0
+      # Backend conecta a MongoDB por DNS interno de Docker (siempre funciona)
+      - MONGO_URI=mongodb://mongo:27017/muraltech?replicaSet=rs0
+      # Lista de IPs reales para rs.initiate() (MongoDB-to-MongoDB)
+      - REPLICA_MEMBERS=${MAQUINA1_IP}:27017,${MAQUINA2_IP}:27017,${MAQUINA3_IP}:27017
     depends_on:
       mongo:
         condition: service_healthy
     restart: unless-stopped
     volumes:
       - ./backend/uploads:/app/uploads
+    networks:
+      - app_net
 
   mongo:
     image: mongo:7.0
-    hostname: ${MAQUINA1_IP}
+    hostname: mongo
     command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "27017:27017"
     extra_hosts:
-      - "${MAQUINA1_IP}:172.18.0.2"
+      # Mapea la IP PROPIA de esta máquina a la IP fija del container en app_net
+      # Así MongoDB puede alcanzarse a sí mismo por su IP pública (necesario para replica set)
+      - "${MY_IP}:10.200.0.10"
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped
-    # Ajuste de identación estricta para solucionar el error de mapping:
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok", "--quiet"]
       interval: 3s
       timeout: 3s
       retries: 10
+    networks:
+      app_net:
+        ipv4_address: 10.200.0.10
 
 volumes:
   mongo_data:
