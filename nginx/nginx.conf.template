@@ -4,6 +4,7 @@ http {
     include /etc/nginx/mime.types;
 
     upstream backend_servers {
+        least_conn;
         server ${MAQUINA1_IP}:3000 max_fails=3 fail_timeout=10s;
         server ${MAQUINA2_IP}:3000 max_fails=3 fail_timeout=10s;
         server ${MAQUINA3_IP}:3000 max_fails=3 fail_timeout=10s;
@@ -14,14 +15,36 @@ http {
         root /usr/share/nginx/html;
         index index.html;
 
+        # Timeouts para evitar 504
+        proxy_connect_timeout 5s;
+        proxy_send_timeout 10s;
+        proxy_read_timeout 10s;
+
         location / {
             try_files $uri $uri/ /index.html;
         }
 
         location /api/ {
+            # Soporte CORS a nivel Nginx (Fallback)
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
+            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
+            
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Max-Age' 1728000;
+                add_header 'Content-Type' 'text/plain; charset=utf-8';
+                add_header 'Content-Length' 0;
+                return 204;
+            }
+
             proxy_pass http://backend_servers;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # Manejo de errores de upstream para saltar rápido
+            proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
         }
 
         location /uploads {

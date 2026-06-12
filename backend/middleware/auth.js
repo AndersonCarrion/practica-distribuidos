@@ -3,6 +3,10 @@ const Usuario = require('../models/Usuario');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'muraltech_secret_key_dev';
 
+// Loguear huella del secreto para verificar consistencia entre nodos
+const secretFingerprint = JWT_SECRET.length > 4 ? `...${JWT_SECRET.slice(-4)}` : '****';
+console.log(`[auth] JWT_SECRET cargado. Huella: ${secretFingerprint}`);
+
 function generarToken(usuario) {
   return jwt.sign(
     { id: usuario._id, email: usuario.email, rol: usuario.rol, institucion_id: usuario.institucion_id },

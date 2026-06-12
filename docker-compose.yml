@@ -3,6 +3,10 @@ services:
     build:
       context: .
       dockerfile: nginx/Dockerfile
+      args:
+        - MAQUINA1_IP=${MAQUINA1_IP}
+        - MAQUINA2_IP=${MAQUINA2_IP}
+        - MAQUINA3_IP=${MAQUINA3_IP}
     ports:
       - "80:80"
     environment:
@@ -14,37 +18,44 @@ services:
     restart: unless-stopped
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
     ports:
       - "3000:3000"
     environment:
-      - NODE_NAME=${NODE_NAME}
+      - NODE_NAME=${NODE_NAME:-Nodo-Desconocido}
       - JWT_SECRET=${JWT_SECRET}
-      - MONGO_URI=mongodb://${MAQUINA1_IP}:27017,${MAQUINA2_IP}:27017,${MAQUINA3_IP}:27017/muraltech?replicaSet=rs0
+      - MONGO_URI=mongodb://${MAQUINA1_IP}:27017,${MAQUINA2_IP}:27017,${MAQUINA3_IP}:27017/muraltech?replicaSet=rs0&serverSelectionTimeoutMS=5000&connectTimeoutMS=10000
     depends_on:
-      mongo:
-        condition: service_healthy
+      - mongo
     restart: unless-stopped
     volumes:
       - ./backend/uploads:/app/uploads
 
   mongo:
     image: mongo:7.0
-    hostname: ${MAQUINA1_IP}
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    # El hostname debe coincidir con la IP o nombre resoluble de esta máquina
+    hostname: ${NODE_NAME:-mongo-node}
+    command: >
+      bash -c "
+      (sleep 10 && bash /scripts/init-replicaset.sh) & 
+      docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --port 27017
+      "
     ports:
       - "27017:27017"
-    extra_hosts:
-      - "${MAQUINA1_IP}:172.18.0.2"
+    environment:
+      - MAQUINA1_IP=${MAQUINA1_IP}
+      - MAQUINA2_IP=${MAQUINA2_IP}
+      - MAQUINA3_IP=${MAQUINA3_IP}
     volumes:
       - mongo_data:/data/db
+      - ./scripts/init-replicaset.sh:/scripts/init-replicaset.sh:ro
     restart: unless-stopped
-    # Ajuste de identación estricta para solucionar el error de mapping:
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok", "--quiet"]
-      interval: 3s
-      timeout: 3s
-      retries: 10
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   mongo_data:

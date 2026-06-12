@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -7,7 +8,14 @@ const app = express();
 const PORT = 3000;
 const NODE_NAME = process.env.NODE_NAME || 'Nodo-Desconocido';
 
-app.use(cors());
+// Configuración de CORS simplificada y robusta para entornos distribuidos
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false // '*' no permite true, pero no lo necesitamos si enviamos el token en el header
+}));
+
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

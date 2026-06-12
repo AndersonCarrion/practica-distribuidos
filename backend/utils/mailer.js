@@ -1,21 +1,36 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
+const config = {
   host: process.env.SMTP_HOST || 'localhost',
   port: Number(process.env.SMTP_PORT) || 1025,
-  secure: false,
-  ignoreTLS: true
-});
+  secure: process.env.SMTP_SECURE === 'true',
+};
+
+if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+  config.auth = {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  };
+}
+
+const transporter = nodemailer.createTransport(config);
 
 async function enviarCorreo({ to, subject, html }) {
   const from = process.env.SMTP_FROM || 'noreply@muraltech.local';
+  
   if (!process.env.SMTP_HOST) {
-    console.log(`\n[MAIL] Para: ${to}`);
-    console.log(`[MAIL] Asunto: ${subject}`);
-    console.log(`[MAIL] Cuerpo:\n${html}\n`);
+    console.log(`\n[MAIL-SIMULADO] Para: ${to}`);
+    console.log(`[MAIL-SIMULADO] Asunto: ${subject}`);
+    console.log(`[MAIL-SIMULADO] Cuerpo:\n${html}\n`);
     return;
   }
-  await transporter.sendMail({ from, to, subject, html });
+
+  try {
+    await transporter.sendMail({ from, to, subject, html });
+  } catch (err) {
+    console.error(`[MAIL-ERROR] Error enviando a ${to}:`, err.message);
+    throw err;
+  }
 }
 
 function plantillaVerificacion(nombre, url) {

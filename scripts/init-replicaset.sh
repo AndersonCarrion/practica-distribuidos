@@ -1,43 +1,49 @@
 #!/bin/bash
-# Inicializa el replica set rs0 de MongoDB
-# Uso: docker-compose exec mongo bash /scripts/init-replicaset.sh
-# O via docker: docker cp scripts/init-replicaset.sh mongo:/ && docker exec mongo bash /init-replicaset.sh
-
+# Inicializa el replica set rs0 de MongoDB de forma automática
 set -e
+
+echo "[init-rs] Esperando a que MongoDB responda..."
+until mongosh --quiet --eval "db.runCommand('ping').ok" &>/dev/null; do
+  sleep 2
+done
 
 # Detectar si rs0 ya está configurado
 if mongosh --quiet --eval "rs.status().ok" 2>/dev/null; then
-  echo "El replica set rs0 ya está inicializado."
-  mongosh --quiet --eval "rs.status().members.forEach(m => print(m.name, m.stateStr))"
+  echo "[init-rs] El replica set rs0 ya está inicializado. Verificando configuración..."
+  # Si el replica set existe pero las IPs cambiaron, el backend no podrá conectar
+  # Aquí se podría añadir lógica de rs.reconfig() si fuera necesario.
+  mongosh --quiet --eval "rs.conf().members.forEach(m => print('Miembro actual:', m.host))"
   exit 0
 fi
 
-echo "Inicializando replica set rs0..."
+echo "[init-rs] Inicializando replica set rs0 con IPs: $MAQUINA1_IP, $MAQUINA2_IP, $MAQUINA3_IP"
 
-# Construye array members a partir de environment variables
+# Construye array members a partir de environment variables pasadas al contenedor
 MEMBERS=""
-i=0
-for var in MAQUINA1_IP MAQUINA2_IP MAQUINA3_IP; do
-  ip="${!var}"
-  if [ -n "$ip" ]; then
-    [ -n "$MEMBERS" ] && MEMBERS="$MEMBERS,"
-    MEMBERS="$MEMBERS{ _id: $i, host: '$ip:27017' }"
-    i=$((i + 1))
-  fi
-done
+[ -n "$MAQUINA1_IP" ] && MEMBERS="$MEMBERS { _id: 0, host: '$MAQUINA1_IP:27017' }"
+[ -n "$MAQUINA2_IP" ] && [ -n "$MEMBERS" ] && MEMBERS="$MEMBERS,"
+[ -n "$MAQUINA2_IP" ] && MEMBERS="$MEMBERS { _id: 1, host: '$MAQUINA2_IP:27017' }"
+[ -n "$MAQUINA3_IP" ] && [ -n "$MEMBERS" ] && MEMBERS="$MEMBERS,"
+[ -n "$MAQUINA3_IP" ] && MEMBERS="$MEMBERS { _id: 2, host: '$MAQUINA3_IP:27017' }"
 
-if [ $i -eq 0 ]; then
-  echo "ERROR: Ninguna MAQUINAX_IP definida en el environment."
+if [ -z "$MEMBERS" ]; then
+  echo "[init-rs] ERROR: No se detectaron IPs (MAQUINA1_IP, etc.)"
   exit 1
 fi
 
 mongosh --quiet --eval "
-  rs.initiate({
-    _id: 'rs0',
-    members: [$MEMBERS]
-  })
+  try {
+    rs.initiate({
+      _id: 'rs0',
+      members: [$MEMBERS]
+    });
+    print('[init-rs] Configuración enviada exitosamente.');
+  } catch (e) {
+    print('[init-rs] Error al inicializar: ' + e.message);
+  }
 "
 
-echo ""
-echo "Estado del replica set:"
-mongosh --quiet --eval "rs.status().members.forEach(m => print(m.name, m.stateStr))"
+# Esperar un poco a que se elija un PRIMARY
+sleep 5
+echo "[init-rs] Estado actual del replica set:"
+mongosh --quiet --eval "rs.status().members.forEach(m => print(m.name + ' [' + m.stateStr + ']'))"
