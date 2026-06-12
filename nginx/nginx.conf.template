@@ -25,7 +25,9 @@ http {
         }
 
         location /uploads {
-            alias /usr/share/nginx/uploads;
+            proxy_pass http://backend_servers;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
             expires 7d;
             add_header Cache-Control "public, immutable";
         }

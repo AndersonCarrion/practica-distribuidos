@@ -1,15 +1,14 @@
 services:
   nginx:
-    build: ./nginx
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
     ports:
       - "80:80"
     environment:
       - MAQUINA1_IP=${MAQUINA1_IP}
       - MAQUINA2_IP=${MAQUINA2_IP}
       - MAQUINA3_IP=${MAQUINA3_IP}
-    volumes:
-      - ./frontend/dist:/usr/share/nginx/html:ro
-      - ./backend/uploads:/usr/share/nginx/uploads:ro
     depends_on:
       - backend
     restart: unless-stopped
@@ -31,9 +30,12 @@ services:
 
   mongo:
     image: mongo:7.0
+    hostname: ${MAQUINA1_IP}
     command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "27017:27017"
+    extra_hosts:
+      - "${MAQUINA1_IP}:172.18.0.2"
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped

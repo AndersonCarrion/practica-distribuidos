@@ -103,7 +103,7 @@ export default function Mural() {
   return (
     <div className="container mural">
       <div className="mural-header">
-        <h1 className="mural-title">Mural de Ofertas N1</h1>
+        <h1 className="mural-title">Mural de Ofertas N3</h1>
         <p className="mural-subtitle">Encuentra oportunidades laborales en tu comunidad</p>
       </div>
 
