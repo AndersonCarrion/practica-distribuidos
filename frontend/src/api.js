@@ -1,24 +1,14 @@
-const API_SERVERS = import.meta.env.VITE_API_SERVERS
-  ? import.meta.env.VITE_API_SERVERS.split(',')
-  : ['/api'];
+const API_BASE = '/api';
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('token');
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  for (const base of API_SERVERS) {
-    try {
-      const res = await fetch(`${base}${endpoint}`, { ...options, headers });
-      const data = await res.json();
-      if (!res.ok) throw { status: res.status, ...data };
-      return data;
-    } catch (err) {
-      if (err.status) throw err;
-      console.warn(`[api] ${base}${endpoint} falló:`, err.message);
-    }
-  }
-  throw new Error('Todos los servidores de API están caídos');
+  const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+  const data = await res.json();
+  if (!res.ok) throw { status: res.status, ...data };
+  return data;
 }
 
 export function get(endpoint) {
@@ -42,20 +32,12 @@ export async function uploadLogo(file) {
   const formData = new FormData();
   formData.append('logo', file);
 
-  for (const base of API_SERVERS) {
-    try {
-      const res = await fetch(`${base}/upload/logo`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData
-      });
-      const data = await res.json();
-      if (!res.ok) throw { status: res.status, ...data };
-      return data;
-    } catch (err) {
-      if (err.status) throw err;
-      console.warn(`[api] ${base}/upload/logo falló:`, err.message);
-    }
-  }
-  throw new Error('Todos los servidores de API están caídos');
+  const res = await fetch(`${API_BASE}/upload/logo`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData
+  });
+  const data = await res.json();
+  if (!res.ok) throw { status: res.status, ...data };
+  return data;
 }
